@@ -3,12 +3,31 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 type Photo = { src: string };
 
+// ...existing code...
+
 const HEART_PATH = (t: number) => {
-  const x = 16 * Math.pow(Math.sin(t), 3);
-  const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+  // Thay heart bằng dạng "clown head" parametric:
+  // vòng tròn cơ bản + biến động sin để tạo effect tóc/chùm
+  const base = 16;
+  const hair = 4 * Math.sin(8 * t); // tạo nhọn/xù quanh đầu giống tóc chú hề
+  const r = base + hair;
+  const x = r * Math.cos(t);
+  const y = r * Math.sin(t) * 1.05; // hơi kéo dọc để đầu trông tự nhiên
   return { x, y };
 };
 
+// Thêm path cho ngôi sao (mượt hơn bằng sin so với stepy star)
+const STAR_PATH = (t: number) => {
+  const spikes = 5;
+  const outer = 18;
+  const inner = 8;
+  // smooth radial modulation to produce 5-point star
+  const r = inner + (outer - inner) * (0.5 + 0.5 * Math.sin(spikes * t));
+  const x = r * Math.cos(t);
+  const y = r * Math.sin(t);
+  return { x, y };
+};
+// ...existing code...
 function usePhotos() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   useEffect(() => {
@@ -80,33 +99,37 @@ export default function HeartMosaic() {
       // No resetting transform here (resize already set ctx to scale by dpr)
       ctx.save();
 
+      // chọn scale và path khác cho mobile (vh > vw)
       let scale = Math.min(vw, vh) * 0.038;
       let offsetY = 0;
-
-      if (vh > vw) {
-        scale = Math.min(vw, vh) * 0.075; // tăng tỉ lệ để tim đầy hơn
-        offsetY = vh * 0.12;              // đẩy tim xuống giữa khung mobile
+      const isMobileTall = vh > vw;
+      if (isMobileTall) {
+        // tăng scale trên mobile để shape chiếm tương đương
+        scale = Math.min(vw, vh) * 0.10;
+        offsetY = vh * 0.12;
       }
 
-      // Container rectangle background (uniform color to fully cover and be consistent)
+      const pathFn = isMobileTall ? STAR_PATH : HEART_PATH;
+
+      // Container rectangle background (chuyển sang tông vàng)
       ctx.save();
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
       const grad = ctx.createLinearGradient(0, 0, 0, vh);
-      grad.addColorStop(0, 'rgba(255, 61, 110, 0.4)');
-      grad.addColorStop(1, 'rgba(255, 140, 180, 0.4)');
+      grad.addColorStop(0, 'rgba(255,215,0,0.35)'); // vàng kim nhạt
+      grad.addColorStop(1, 'rgba(255,239,145,0.35)'); // vàng kem
       ctx.fillStyle = grad;
       // fill with CSS-px rect
       ctx.fillRect(0, 0, vw, vh);
       ctx.restore();
 
-      // Create heart path (center using CSS-px)
+      // Create shape path (center using CSS-px)
       ctx.save();
       const cx = vw / 2;
       const cy = vh / 2;
 
-      if (vh > vw) {
-        ctx.translate(cx, cy + vh * 0.12);
+      if (isMobileTall) {
+        ctx.translate(cx, cy + offsetY);
       } else {
         ctx.translate(cx, cy);
       }
@@ -114,7 +137,7 @@ export default function HeartMosaic() {
       ctx.beginPath();
       for (let i = 0; i <= 200; i++) {
         const a = (i / 200) * Math.PI * 2;
-        const { x, y } = HEART_PATH(a);
+        const { x, y } = pathFn(a);
         const px = x * scale;
         const py = -y * scale;
         if (i === 0) ctx.moveTo(px, py);
@@ -123,6 +146,7 @@ export default function HeartMosaic() {
       ctx.closePath();
       ctx.clip();
 
+      // ...existing code for mosaic drawing (unchanged)...
       // Mosaic tiles (lower density = larger tile => ảnh rõ hơn)
       const tile = Math.max(36, Math.floor(Math.min(vw, vh) / 12));
       const cols = Math.ceil(vw / tile) + 2;
@@ -156,15 +180,15 @@ export default function HeartMosaic() {
               ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
             } else {
               const g = ctx.createLinearGradient(-tile / 2, -tile / 2, tile / 2, tile / 2);
-              g.addColorStop(0, '#ff3d6e');
-              g.addColorStop(1, '#ffd1e0');
+              g.addColorStop(0, '#ffd54f');
+              g.addColorStop(1, '#ffb300');
               ctx.fillStyle = g;
               ctx.fillRect(-tile / 2, -tile / 2, tile, tile);
             }
           } else {
             const g = ctx.createLinearGradient(-tile / 2, -tile / 2, tile / 2, tile / 2);
-            g.addColorStop(0, '#ff3d6e');
-            g.addColorStop(1, '#ffd1e0');
+            g.addColorStop(0, '#ffd54f');
+            g.addColorStop(1, '#ffb300');
             ctx.fillStyle = g;
             ctx.fillRect(-tile / 2, -tile / 2, tile, tile);
           }
@@ -175,7 +199,7 @@ export default function HeartMosaic() {
 
       ctx.restore();
 
-      // Soft glow outline
+      // Soft glow outline (vàng) — dùng cùng pathFn
       ctx.save();
       ctx.translate(vw / 2, vh / 2 + 20);
       ctx.globalAlpha = 0.6;
@@ -183,13 +207,13 @@ export default function HeartMosaic() {
         ctx.beginPath();
         for (let i = 0; i <= 200; i++) {
           const a = (i / 200) * Math.PI * 2;
-          const { x, y } = HEART_PATH(a);
+          const { x, y } = pathFn(a);
           const px = x * scale * (1 + r * 0.015 + Math.sin(t + a) * 0.003);
           const py = -y * scale * (1 + r * 0.015 + Math.cos(t + a) * 0.003);
           if (i === 0) ctx.moveTo(px, py);
           else ctx.lineTo(px, py);
         }
-        ctx.strokeStyle = `rgba(255,61,110,${0.12 - r * 0.015})`;
+        ctx.strokeStyle = `rgba(255,200,0,${0.12 - r * 0.015})`;
         ctx.lineWidth = 2 + r * 1.2;
         ctx.stroke();
       }
@@ -215,7 +239,7 @@ export default function HeartMosaic() {
     height: '100%',
     display: 'block',
     borderRadius: 24,
-    boxShadow: '0 20px 60px rgba(255,61,110,0.25)',}} className="glass" />
+    boxShadow: '0 20px 60px rgba(255,199,0,0.25)',}} className="glass" />
     </div>
   );
 }

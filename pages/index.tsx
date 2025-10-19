@@ -16,7 +16,9 @@ export default function HomePage() {
   return (
     <>
       <Head>
-        <title>20-10 | Gửi Hà Kim Thảo xinh đẹp</title>
+        <title>20-10!
+          Gửi đóm chúa thân mến
+        ` </title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content="Thiệp 20-10 với trái tim ghép từ ảnh kỷ niệm" />
       </Head>
@@ -30,7 +32,9 @@ export default function HomePage() {
         <div className="spacerLg" />
         <GreetingCard />
         <footer className="footer">
-          <span>Gửi tặng người đặc biệt nhân ngày 20/10 ❤️</span>
+          <span>Gửi tặng người 
+            bạn hay overthinking 
+          ❤️</span>
         </footer>
       </main>
     </>

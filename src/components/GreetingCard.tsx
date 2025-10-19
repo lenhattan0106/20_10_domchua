@@ -95,24 +95,25 @@ export default function GreetingCard() {
         >
           <div className="modalCard shimmer" onClick={(e) => e.stopPropagation()}>
             <h1 style={{ margin: '8px 0 10px', fontSize: 40, letterSpacing: 0.5 }}>
-              Chúc mừng 20/10, người con gái xinh đẹp! 💖
+              Chúc mừng 20/10, idol celeb xịn xò con bò 💖
             </h1>
             <p style={{ margin: 0, lineHeight: 1.75, fontSize: 18, opacity: 0.96 }}>
-              Chúc bạn luôn xinh đẹp, hạnh phúc, và rạng rỡ mỗi ngày. Cảm ơn bạn đã đến
-              bên mình, và tạo cho mình nhiều khoảnh khắc đáng nhớ. 
-              Mình không biết nên nói điều gì để nữa, chỉ biết cảm ơn bạn – vì đã đến, đã làm cho những ngày bình thường trở nên đáng nhớ. Chúc bạn luôn rạng rỡ, luôn tìm thấy niềm vui trong từng điều nhỏ bé.
-              Nếu sau này có dịp ở cùng một thành phố, hy vọng chúng ta sẽ cùng nhau đi dạo, ngồi trò chuyện và mình có thể tặng bạn món quà mà hôm nay chỉ có thể gửi bằng những dòng chữ này.
-              Còn nếu không có duyên được ở cùng một nơi, thì xem như chúng ta đã có những kỷ niệm thật đẹp về nhau — những kỷ niệm mà mình sẽ luôn trân trọng. 🌷
+          Chúc bạn luôn xinh đẹp, hạnh phúc và rạng rỡ — đến mức người ta phải nghi ngờ bạn đang mang theo “bộ lọc ánh sáng tự nhiên” 😄.
+Cảm ơn bạn đã ghé vào đời mình, biến những ngày bình thường thành những khoảnh khắc đáng nhớ và đầy tiếng cười.
+
+
+Nếu một ngày nào đó ta ở cùng thành phố, thì xác định nhé — địa bàn đó là của chúng ta: đi cháy phố, quét quán, gom luôn vài “hồng hài nhi” cho vui đời. 😎
+Còn nếu không, thì ta vẫn có thể gọi nhau lúc nửa đêm để kể chuyện, bóc phốt nhẹ, và cười như thể chưa từng xa. 🌙
             </p>
             <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
               <span className="glass" style={{ padding: '10px 14px', borderRadius: 12, background: 'rgba(255,61,110,0.15)', borderColor: 'rgba(255,61,110,0.35)' }}>
-                ❤️ Mãi xinh đẹp nhé
+                ❤️Liễu Như Yên mãi xinh đẹp
               </span>
               <span className="glass" style={{ padding: '10px 14px', borderRadius: 12, background: 'rgba(255,209,224,0.15)', borderColor: 'rgba(255,209,224,0.35)' }}>
-                ✨ Hạnh phúc mỗi ngày
+                ✨ Tôi trùng sinh có hệ thống vạn năng thu thập hồng hài nhi
               </span>
               <span className="glass" style={{ padding: '10px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.25)' }}>
-                🎁 Gymer trẻ :D
+                🎁 Trưởng fandom Đóm Chúa
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
