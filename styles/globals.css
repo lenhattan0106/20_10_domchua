@@ -61,14 +61,7 @@ body {
   z-index: 0;
 }
 
-.modalCard {
-  width: min(760px, 90vw);
-  max-height: 80vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch; /* iOS momentum scroll */
-  touch-action: pan-y; /* allow vertical pan inside card */
-  overscroll-behavior: contain; /* prevent background scroll when reaching edges */
-}
+
 
 
 /* Responsive fix */
@@ -171,6 +164,10 @@ body {
   backdrop-filter: blur(6px);
   animation: overlayFade 240ms ease-out forwards;
   z-index: 50;
+
+  /* prevent the overlay from interpreting pan gestures;
+     modalCard will allow vertical panning (touch-action: pan-y) */
+  touch-action: none;
 }
 
 @keyframes overlayFade {
@@ -186,7 +183,11 @@ body {
   border: 1px solid rgba(255,255,255,0.18);
   box-shadow: 0 30px 80px rgba(0,0,0,0.45), inset 0 0 60px rgba(255,255,255,0.06);
   position: relative;
-  overflow: hidden;
+  max-height: 80vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* iOS momentum */
+  touch-action: pan-y; /* allow vertical pan inside card */
+  overscroll-behavior: contain; /* prevent background scroll when reaching edges */
   animation: popIn 320ms cubic-bezier(.2,.9,.2,1) forwards, breathe 6s ease-in-out infinite;
 }
 

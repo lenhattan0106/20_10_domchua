@@ -1,9 +1,14 @@
+// ...existing code...
 import { useEffect, useRef, useState } from 'react';
 
 export default function GreetingCard() {
   const ref = useRef<HTMLDivElement | null>(null);
   const [opened, setOpened] = useState(false);
   const [modal, setModal] = useState(false);
+
+  // track pointer down/up to distinguish tap vs scroll/drag
+  const pointerDownRef = useRef<{ x: number; y: number } | null>(null);
+
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -26,6 +31,19 @@ export default function GreetingCard() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  // Lock body scroll when modal open (restore on close/unmount)
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    if (modal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = prevOverflow || '';
+    }
+    return () => {
+      document.body.style.overflow = prevOverflow || '';
+    };
+  }, [modal]);
 
   return (
     <section aria-label="Thiệp chúc mừng" style={{ position: 'relative', marginTop: -40 }}>
@@ -56,7 +74,25 @@ export default function GreetingCard() {
 
       {/* Modal */}
       {modal && (
-        <div className="modalOverlay" onClick={() => setModal(false)}>
+        <div
+          className="modalOverlay"
+          // use pointer events to distinguish tap vs scroll: record down/up and only close on small movement + target is overlay
+          onPointerDown={(e) => {
+            pointerDownRef.current = { x: (e as any).clientX, y: (e as any).clientY };
+          }}
+          onPointerUp={(e) => {
+            const down = pointerDownRef.current;
+            pointerDownRef.current = null;
+            if (!down) return;
+            const dx = Math.abs(down.x - (e as any).clientX);
+            const dy = Math.abs(down.y - (e as any).clientY);
+            const moved = Math.hypot(dx, dy);
+            // if pointer released on overlay itself and movement is small -> treat as tap -> close
+            if (e.currentTarget === e.target && moved < 8) {
+              setModal(false);
+            }
+          }}
+        >
           <div className="modalCard shimmer" onClick={(e) => e.stopPropagation()}>
             <h1 style={{ margin: '8px 0 10px', fontSize: 40, letterSpacing: 0.5 }}>
               Chúc mừng 20/10, người con gái xinh đẹp! 💖
@@ -97,5 +133,4 @@ export default function GreetingCard() {
     </section>
   );
 }
-
-
+// ...existing code...
