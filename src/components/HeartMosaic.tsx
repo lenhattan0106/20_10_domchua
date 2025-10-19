@@ -50,17 +50,19 @@ export default function HeartMosaic() {
     let raf = 0;
     let start = performance.now();
 
-    function resize() {
-      if (!canvas || !ctx) return;
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      const width = Math.min(window.innerWidth, 1200);
-      const height = Math.min(window.innerHeight, 900);
-      canvas.width = Math.floor(width * dpr);
-      canvas.height = Math.floor(height * dpr);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
+  function resize() {
+  if (!canvas || !ctx) return;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const parent = canvas.parentElement;
+  const width = parent ? parent.clientWidth : window.innerWidth;
+  const height = parent ? parent.clientHeight : window.innerHeight;
+
+  canvas.width = Math.floor(width * dpr);
+  canvas.height = Math.floor(height * dpr);
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
 
     function draw(now: number) {
       if (!canvas || !ctx) return;
@@ -69,10 +71,17 @@ export default function HeartMosaic() {
       ctx.clearRect(0, 0, width, height);
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 0, 0);
+      const dpr = window.devicePixelRatio || 1;
+const vw = canvas.width / dpr;
+const vh = canvas.height / dpr;
 
-      const vw = canvas.clientWidth;
-      const vh = canvas.clientHeight;
-      const scale = Math.min(vw, vh) * 0.03; // heart scale factor
+let scale = Math.min(vw, vh) * 0.038;
+let offsetY = 0;
+
+if (vh > vw) {
+  scale = Math.min(vw, vh) * 0.075; // tăng tỉ lệ để tim đầy hơn
+  offsetY = vh * 0.12;              // đẩy tim xuống giữa khung mobile
+} 
 
       // Container rectangle background (uniform color to fully cover and be consistent)
       ctx.save();
@@ -87,7 +96,16 @@ ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Create heart path
       ctx.save();
-      ctx.translate(vw / 2, vh / 2 + 20);
+const cx = canvas.width / (2 * dpr);
+const cy = canvas.height / (2 * dpr);
+
+// 🔥 Nếu màn hình dọc (mobile), đẩy tim xuống một chút
+if (vh > vw) {
+  ctx.translate(cx, cy + vh * 0.12);
+} else {
+  ctx.translate(cx, cy);
+}
+
       ctx.beginPath();
       for (let i = 0; i <= 200; i++) {
         const a = (i / 200) * Math.PI * 2;
@@ -187,7 +205,11 @@ ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   return (
     <div className="shine mosaicContainer">
-      <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block', borderRadius: 24 }} className="glass" />
+      <canvas ref={canvasRef} style={{ width: '100%',
+    height: '100%',
+    display: 'block',
+    borderRadius: 24,
+    boxShadow: '0 20px 60px rgba(255,61,110,0.25)',}} className="glass" />
     </div>
   );
 }
