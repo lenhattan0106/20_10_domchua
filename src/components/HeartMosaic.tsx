@@ -1,3 +1,4 @@
+// ...existing code...
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 type Photo = { src: string };
@@ -61,50 +62,54 @@ export default function HeartMosaic() {
   canvas.height = Math.floor(height * dpr);
   canvas.style.width = `${width}px`;
   canvas.style.height = `${height}px`;
+  // keep drawing coordinates in CSS pixels by scaling by dpr once here
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
     function draw(now: number) {
       if (!canvas || !ctx) return;
       const t = (now - start) / 1000;
-      const { width, height } = canvas;
-      ctx.clearRect(0, 0, width, height);
+      // Use CSS-px coordinates (vw/vh) because ctx has been scaled by dpr in resize()
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const vw = canvas.width / dpr;
+      const vh = canvas.height / dpr;
+
+      // clear using CSS-px dimensions
+      ctx.clearRect(0, 0, vw, vh);
+
+      // No resetting transform here (resize already set ctx to scale by dpr)
       ctx.save();
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      const dpr = window.devicePixelRatio || 1;
-const vw = canvas.width / dpr;
-const vh = canvas.height / dpr;
 
-let scale = Math.min(vw, vh) * 0.038;
-let offsetY = 0;
+      let scale = Math.min(vw, vh) * 0.038;
+      let offsetY = 0;
 
-if (vh > vw) {
-  scale = Math.min(vw, vh) * 0.075; // tăng tỉ lệ để tim đầy hơn
-  offsetY = vh * 0.12;              // đẩy tim xuống giữa khung mobile
-} 
+      if (vh > vw) {
+        scale = Math.min(vw, vh) * 0.075; // tăng tỉ lệ để tim đầy hơn
+        offsetY = vh * 0.12;              // đẩy tim xuống giữa khung mobile
+      }
 
       // Container rectangle background (uniform color to fully cover and be consistent)
       ctx.save();
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
-      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-grad.addColorStop(0, 'rgba(255, 61, 110, 0.4)');
-grad.addColorStop(1, 'rgba(255, 140, 180, 0.4)');
-ctx.fillStyle = grad;
-ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const grad = ctx.createLinearGradient(0, 0, 0, vh);
+      grad.addColorStop(0, 'rgba(255, 61, 110, 0.4)');
+      grad.addColorStop(1, 'rgba(255, 140, 180, 0.4)');
+      ctx.fillStyle = grad;
+      // fill with CSS-px rect
+      ctx.fillRect(0, 0, vw, vh);
       ctx.restore();
 
-      // Create heart path
+      // Create heart path (center using CSS-px)
       ctx.save();
-const cx = canvas.width / (2 * dpr);
-const cy = canvas.height / (2 * dpr);
+      const cx = vw / 2;
+      const cy = vh / 2;
 
-// 🔥 Nếu màn hình dọc (mobile), đẩy tim xuống một chút
-if (vh > vw) {
-  ctx.translate(cx, cy + vh * 0.12);
-} else {
-  ctx.translate(cx, cy);
-}
+      if (vh > vw) {
+        ctx.translate(cx, cy + vh * 0.12);
+      } else {
+        ctx.translate(cx, cy);
+      }
 
       ctx.beginPath();
       for (let i = 0; i <= 200; i++) {
@@ -123,21 +128,20 @@ if (vh > vw) {
       const cols = Math.ceil(vw / tile) + 2;
       const rows = Math.ceil(vh / tile) + 2;
 
-      for (let y = -rows / 2; y < rows / 2; y++) {
-        for (let x = -cols / 2; x < cols / 2; x++) {
-          const gx = x * tile;
-          const gy = y * tile;
-          const jitterX = Math.sin((x + y) * 0.5 + t * 0.8) * 1.4;
-          const jitterY = Math.cos((x - y) * 0.5 + t * 0.8) * 1.4;
-          const angle = Math.sin((x * 0.25) + (y * 0.18) + t * 0.4) * 0.045;
+      for (let yy = -rows / 2; yy < rows / 2; yy++) {
+        for (let xx = -cols / 2; xx < cols / 2; xx++) {
+          const gx = xx * tile;
+          const gy = yy * tile;
+          const jitterX = Math.sin((xx + yy) * 0.5 + t * 0.8) * 1.4;
+          const jitterY = Math.cos((xx - yy) * 0.5 + t * 0.8) * 1.4;
+          const angle = Math.sin((xx * 0.25) + (yy * 0.18) + t * 0.4) * 0.045;
 
           ctx.save();
           ctx.translate(gx + jitterX, gy + jitterY);
           ctx.rotate(angle);
 
           if (images.length > 0) {
-            // Deterministic per-tile image selection to minimize neighbors repeating
-            const h = Math.abs(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453);
+            const h = Math.abs(Math.sin(xx * 12.9898 + yy * 78.233) * 43758.5453);
             const offset = Math.floor((t * 0.3)) % images.length;
             const pick = (Math.floor(h) + offset) % images.length;
             const img = images[pick];
@@ -148,6 +152,7 @@ if (vh > vw) {
               const s = Math.max(tile / iw, tile / ih);
               const dw = iw * s;
               const dh = ih * s;
+              // draw using CSS-px coordinates (ctx already scaled)
               ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh);
             } else {
               const g = ctx.createLinearGradient(-tile / 2, -tile / 2, tile / 2, tile / 2);
@@ -157,7 +162,6 @@ if (vh > vw) {
               ctx.fillRect(-tile / 2, -tile / 2, tile, tile);
             }
           } else {
-            // Fallback gradient tile
             const g = ctx.createLinearGradient(-tile / 2, -tile / 2, tile / 2, tile / 2);
             g.addColorStop(0, '#ff3d6e');
             g.addColorStop(1, '#ffd1e0');
@@ -191,6 +195,8 @@ if (vh > vw) {
       }
       ctx.restore();
 
+      ctx.restore();
+
       raf = requestAnimationFrame(draw);
     }
 
@@ -213,5 +219,4 @@ if (vh > vw) {
     </div>
   );
 }
-
-
+// ...existing code...
