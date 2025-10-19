@@ -64,6 +64,7 @@ export default function ThreeGalaxy() {
     const clock = new THREE.Clock();
 
     function onResize() {
+      if (!container) return;
       const w = container.clientWidth;
       const h = container.clientHeight;
       camera.aspect = w / h;
