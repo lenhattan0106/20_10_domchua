@@ -186,10 +186,34 @@ ctx.fillRect(0, 0, canvas.width, canvas.height);
   }, [images]);
 
   return (
-    <div className="shine mosaicContainer">
-      <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block', borderRadius: 24 }} className="glass" />
-    </div>
-  );
+  <div
+    className="shine mosaicContainer"
+    style={{
+      width: "100vw",
+      height: "100vh",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      background: "linear-gradient(145deg, #3b0a1a 0%, #2a0b22 100%)",
+      overflow: "hidden",
+    }}
+  >
+    <canvas
+      ref={canvasRef}
+      style={{
+        width: "100%",
+        height: "100%",
+        maxWidth: "1200px",
+        maxHeight: "900px",
+        display: "block",
+        borderRadius: "24px",
+        objectFit: "contain",
+      }}
+      className="glass"
+    />
+  </div>
+);
+
 }
 
 
